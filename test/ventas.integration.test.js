@@ -30,7 +30,11 @@ const runQuery = (col, filters, lim) => {
   return { empty: !docs.length, docs };
 };
 const fakeDb = {
-  collection: (col) => ({ doc: (id = `auto${++autoId}`) => docRef(col, id), where: (...a) => query(col).where(...a) }),
+  collection: (col) => ({
+    doc: (id = `auto${++autoId}`) => docRef(col, id),
+    where: (...a) => query(col).where(...a),
+    get: async () => runQuery(col, []),
+  }),
   runTransaction: async (fn) => {
     const writes = [];
     const tx = {
@@ -108,6 +112,15 @@ test('cambio de estado: solo admin', async () => {
   assert.equal((await call(`/api/ventas/${ventaId}/estado`, 'u1', { method: 'PATCH', body })).status, 403);
   assert.equal((await call(`/api/ventas/${ventaId}/estado`, 'adm', { method: 'PATCH', body })).status, 200);
   assert.equal(store.pedidos[ventaId].estado, 'Enviado');
+});
+
+test('listar todas las ventas: solo admin', async () => {
+  assert.equal((await call('/api/ventas', 'u1')).status, 403);
+  const res = await call('/api/ventas', 'adm');
+  assert.equal(res.status, 200);
+  const lista = await res.json();
+  assert.equal(Array.isArray(lista), true);
+  assert.equal(lista.length, 1);
 });
 
 test.after(() => server.close());

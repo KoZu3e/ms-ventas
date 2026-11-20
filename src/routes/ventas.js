@@ -1,10 +1,15 @@
 import { Router } from 'express';
 import { requireAuth, requireAdmin } from '../middleware/auth.js';
-import { crearVenta, obtenerVenta, listarVentasUsuario, cambiarEstado } from '../services/ventas.js';
+import { crearVenta, obtenerVenta, listarVentasUsuario, listarTodasVentas, cambiarEstado } from '../services/ventas.js';
 import { armarComprobante, generarPDF, numeroFormateado } from '../services/comprobante.js';
 
 const r = Router();
 const wrap = (fn) => (req, res, next) => fn(req, res).catch(next);
+
+// Listar todas las ventas (solo admin/owner)
+r.get('/', requireAuth, requireAdmin, wrap(async (_req, res) => {
+  res.json(await listarTodasVentas());
+}));
 
 // Crear venta desde el carrito del usuario autenticado
 r.post('/', requireAuth, wrap(async (req, res) => {

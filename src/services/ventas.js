@@ -94,6 +94,11 @@ export async function listarVentasUsuario(uid) {
   return qs.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
 }
 
+export async function listarTodasVentas() {
+  const qs = await db.collection('pedidos').get();
+  return qs.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => new Date(b.fecha) - new Date(a.fecha));
+}
+
 export async function cambiarEstado(id, estado) {
   if (!ESTADOS.includes(estado)) throw new ErrorVenta(400, `Estado inválido. Use: ${ESTADOS.join(', ')}`);
   const ref = db.collection('pedidos').doc(id);

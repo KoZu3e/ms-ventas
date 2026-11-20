@@ -4,7 +4,7 @@ import ventas from './routes/ventas.js';
 
 export function crearApp() {
   const app = express();
-  app.use(cors({ origin: (process.env.CORS_ORIGINS || 'http://localhost:5173').split(',') }));
+  app.use(cors(process.env.CORS_ORIGINS ? { origin: process.env.CORS_ORIGINS.split(',') } : undefined));
   app.use(express.json({ limit: '100kb' }));
   app.get('/health', (_req, res) => res.json({ ok: true, servicio: 'ms-ventas' }));
   app.use('/api/ventas', ventas);

@@ -1,23 +1,28 @@
 import PDFDocument from 'pdfkit';
-import { formatoCLP } from '../lib/calculos.js';
+import { formatoCLP, calcularTotales } from '../lib/calculos.js';
 
 export const numeroFormateado = (n) => String(n ?? 0).padStart(8, '0');
 
 /** JSON del comprobante (mismo contenido que el PDF). */
 export function armarComprobante(v) {
+  const productos = (v.productos || []).map((p) => ({ ...p, cantidad: p.cantidad || 1, precio: Number(p.precio) || 0 }));
+  const ivaPct = v.ivaPorcentaje ?? 19;
+  const descPct = v.descuentoAplicado ?? 0;
+  const fallback = calcularTotales(productos, descPct, ivaPct);
+
   return {
     empresa: { nombre: process.env.EMPRESA_NOMBRE || 'La BatiTienda', direccion: process.env.EMPRESA_DIRECCION || '' },
     numero: numeroFormateado(v.numeroComprobante),
     idVenta: v.id,
     fecha: v.fecha,
     estado: v.estado,
-    cliente: v.cliente,
-    items: v.productos.map((p) => ({ ...p, totalLinea: p.precio * p.cantidad })),
-    subtotal: v.subtotal,
-    descuento: { porcentaje: v.descuentoAplicado, monto: v.montoDescuento, cupon: v.cupon },
-    neto: v.neto,
-    iva: { porcentaje: v.ivaPorcentaje, monto: v.iva },
-    total: v.total,
+    cliente: v.cliente || {},
+    items: productos.map((p) => ({ ...p, totalLinea: p.precio * p.cantidad })),
+    subtotal: v.subtotal ?? fallback.subtotal,
+    descuento: { porcentaje: descPct, monto: v.montoDescuento ?? fallback.montoDescuento, cupon: v.cupon ?? null },
+    neto: v.neto ?? fallback.neto,
+    iva: { porcentaje: ivaPct, monto: v.iva ?? fallback.iva },
+    total: v.total ?? fallback.total,
   };
 }
 

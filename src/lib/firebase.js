@@ -1,8 +1,22 @@
 import admin from 'firebase-admin';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-// Usa GOOGLE_APPLICATION_CREDENTIALS (ruta al JSON de la cuenta de servicio).
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const localKeyPath = path.resolve(__dirname, '../../serviceAccountKey.json');
+
 if (!admin.apps.length) {
-  admin.initializeApp({ credential: admin.credential.applicationDefault(), projectId: 'la-batitienda' });
+  let credential;
+  if (process.env.FIREBASE_SERVICE_ACCOUNT) {
+    credential = admin.credential.cert(JSON.parse(process.env.FIREBASE_SERVICE_ACCOUNT));
+  } else if (fs.existsSync(localKeyPath)) {
+    credential = admin.credential.cert(JSON.parse(fs.readFileSync(localKeyPath, 'utf8')));
+  } else {
+    credential = admin.credential.applicationDefault();
+  }
+
+  admin.initializeApp({ credential, projectId: 'la-batitienda' });
 }
 
 export const db = admin.firestore();
