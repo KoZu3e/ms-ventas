@@ -117,7 +117,14 @@ export const swaggerSpec = {
         security: [{ bearerAuth: [] }],
         parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string' } }],
         responses: {
-          200: { description: 'Archivo PDF del comprobante' },
+          200: {
+            description: 'Archivo PDF del comprobante',
+            content: {
+              'application/pdf': {
+                schema: { type: 'string', format: 'binary' }
+              }
+            }
+          },
           403: { description: 'Sin permisos' },
           404: { description: 'Venta no encontrada' }
         }
