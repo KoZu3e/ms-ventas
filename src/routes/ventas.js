@@ -33,7 +33,7 @@ r.get('/:id/comprobante', requireAuth, wrap(async (req, res) => {
 r.get('/:id/comprobante.pdf', requireAuth, wrap(async (req, res) => {
   const venta = await obtenerVenta(req.params.id, req.user);
   res.setHeader('Content-Type', 'application/pdf');
-  res.setHeader('Content-Disposition', `inline; filename="comprobante-${numeroFormateado(venta.numeroComprobante)}.pdf"`);
+  res.setHeader('Content-Disposition', `attachment; filename="comprobante-${numeroFormateado(venta.numeroComprobante)}.pdf"`);
   generarPDF(venta, res);
 }));
 
